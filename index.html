@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donbas Data Repository</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <img src="icg_logo.png" height="150" width="150" />
+    <h1>Conflict in Donbas, Before the War: Data Repository</h1>
+    <p>This page hosts the data for now ended Donbas research project at the International Crisis Group. Prior to the 2022 Russian invasion, it was a regularly updated visual blog on crisisgroup.org. <a href="https://www.crisisgroup.org/content/conflict-ukraines-donbas-visual-explainer" target="_blank"> You can still visit the page here.</a></p>
+    <p><strong>Attribution Policy:</strong>The data available here is available under the GNU General Public License. You may use this data, with attribution to the Europe and Central Asia program (ECA) at the <a href="https://www.crisisgroup.org/" target="_blank">International Crisis Group.</a></p>
+    <ul id="file-list"></ul>
+
+    <script>
+        const fileListElement = document.getElementById('file-list');
+
+        function fetchFiles(url, parentElement) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Filter out directories
+                    const files = data.filter(item => item.type === 'file');
+
+                    // Generate links dynamically
+                    files.forEach(file => {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.href = file.html_url;
+                        a.textContent = file.name;
+                        li.appendChild(a);
+                        parentElement.appendChild(li);
+                    });
+
+                    // Recursively fetch files from subdirectories
+                    const subdirectories = data.filter(item => item.type === 'dir');
+                    subdirectories.forEach(subdirectory => {
+                        const li = document.createElement('li');
+                        li.textContent = subdirectory.name;
+                        const ul = document.createElement('ul');
+                        li.appendChild(ul);
+                        parentElement.appendChild(li);
+
+                        fetchFiles(subdirectory.url, ul);
+                    });
+                })
+                .catch(error => console.error('Error fetching file list:', error));
+        }
+
+        // Initial fetch for the root directory
+        fetchFiles('https://api.github.com/repos/CrisisGroup/donbas-data-repo/contents/', fileListElement);
+    </script>
+</body>
+</html>
